@@ -2,38 +2,98 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>Damage Module Receipt</title>
   <style>
     :root{
       --bg:#f6f8fa; --card:#ffffff; --accent:#4863f8; --accent-2:#8b5cf6;
       --muted:#6b7280; --success:#059669; --danger:#dc2626; --radius:12px;
-      --shadow: 0 8px 30px rgba(15,23,42,0.06);
+      --shadow:0 8px 30px rgba(15,23,42,0.06);
     }
-    *{box-sizing:border-box}
-    body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:linear-gradient(180deg,#f1f6ff 0%,var(--bg) 100%); margin:0; padding:28px; color:#0f172a;}
+    *{box-sizing:border-box;}
+    body{
+      font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:linear-gradient(180deg,#f1f6ff 0%,var(--bg) 100%);
+      margin:0;padding:18px;color:#0f172a;
+    }
     .container{max-width:980px;margin:0 auto;padding:6px;}
-    .card{background:var(--card);border-radius:14px;padding:22px;box-shadow:var(--shadow);border:1px solid rgba(11,99,214,0.04);}
-    .header{display:flex;gap:14px;align-items:center;}
-    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px;}
+    .card{
+      background:var(--card);border-radius:14px;padding:22px;
+      box-shadow:var(--shadow);border:1px solid rgba(11,99,214,0.04);
+    }
+    .header{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+    .logo{width:48px;height:48px;border-radius:10px;
+      background:linear-gradient(135deg,var(--accent),var(--accent-2));
+      display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:18px;}
     h1{margin:0;font-size:18px;} p.lead{margin:6px 0 0;color:var(--muted);font-size:13px;}
-    label{font-size:13px;color:var(--accent);font-weight:700;display:block;margin-bottom:8px;}
-    select,input,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #e6e9ef;font-size:14px;background:#fff;}
+    label{font-size:13px;color:var(--accent);font-weight:700;display:block;margin-bottom:6px;}
+    select,input,textarea{
+      width:100%;padding:12px 14px;border-radius:10px;
+      border:1px solid #e6e9ef;font-size:15px;background:#fff;
+    }
     textarea{min-height:80px;resize:vertical;}
     .module-area{background:#fbfdff;border-radius:10px;padding:12px;border:1px solid #eef2ff;margin-top:14px;}
-    .module-controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-    .btn{padding:8px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700;}
+    .module-controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;}
+    .btn{padding:8px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:700;font-size:14px;}
     .btn-add{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;}
     .btn-remove{background:#fff;border:1px solid #e5e7eb;}
-    .row-item{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:10px;background:white;border:1px solid #eef2ff;margin-top:8px;}
-    .row-left{flex:1;} .row-mid{flex:1;}
+    .row-item{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:10px;background:white;border:1px solid #eef2ff;margin-top:8px;flex-wrap:wrap;}
+    .row-left,.row-mid{flex:1;min-width:240px;}
     .icon-btn{width:38px;height:38px;border-radius:8px;border:0;background:#fff;display:inline-grid;place-items:center;cursor:pointer;box-shadow:0 6px 14px rgba(2,6,23,0.04);}
     .two-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
-    @media(max-width:720px){.two-grid{grid-template-columns:1fr;}}
-    .actions{display:flex;gap:12px;margin-top:18px;align-items:center;}
-    .submit{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;padding:10px 16px;border-radius:10px;border:0;font-weight:700;}
-    .reset{background:#fff;border:1px solid #e5e7eb;color:#374151;padding:9px 14px;border-radius:10px;font-weight:700;}
+    @media(max-width:720px){.two-grid{grid-template-columns:1fr;} .row-item{flex-direction:column;}}
+    .actions{display:flex;gap:12px;margin-top:18px;align-items:center;flex-wrap:wrap;}
+    .submit{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:white;padding:12px 18px;border-radius:10px;border:0;font-weight:700;font-size:15px;}
+    .reset{background:#fff;border:1px solid #e5e7eb;color:#374151;padding:11px 16px;border-radius:10px;font-weight:700;font-size:15px;}
     .msg{margin-top:10px;font-size:14px;color:var(--muted);} .msg.error{color:var(--danger);} .msg.success{color:var(--success);}
+
+    /* ✅ Fullscreen Success Overlay */
+    #successOverlay{
+      position:fixed;inset:0;background:rgba(255,255,255,0.95);
+      display:none;align-items:center;justify-content:center;flex-direction:column;
+      z-index:9999;text-align:center;padding:20px;
+    }
+    #successOverlay h2{font-size:28px;color:var(--success);margin:10px 0;}
+    #successOverlay p{font-size:16px;color:#374151;margin:6px 0;}
+    #successOverlay button{
+      margin-top:20px;padding:10px 16px;border-radius:8px;
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      border:0;color:white;font-size:15px;font-weight:700;cursor:pointer;
+    }
+	
+    .footer{
+      margin-top:40px;
+      padding:18px 10px;
+      text-align:center;
+      font-size:14px;
+      font-weight:500;
+      color:var(--accent);
+      background:linear-gradient(90deg,var(--accent),var(--accent-2));
+      border-radius:14px;
+      box-shadow:0 8px 24px rgba(11,99,214,0.12);
+      letter-spacing:0.4px;
+      transition:all 0.3s ease;
+    }
+    .footer p{
+      margin:0;
+      color:#fff;
+    }
+    .footer strong{
+      color:#fff;
+      font-weight:700;
+      text-shadow:0 1px 2px rgba(0,0,0,0.15);
+    }
+    .footer .at{
+      opacity:0.9;
+      font-weight:600;
+    }
+    .footer:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 28px rgba(11,99,214,0.18);
+    }
+    @media(max-width:600px){
+      .footer{font-size:13px;padding:14px;}
+    }
   </style>
 </head>
 <body>
@@ -48,21 +108,19 @@
       </div>
 
       <form id="damageForm">
-        <!-- 1) Site Name — dropdown (only allowed sites) -->
-<div style="margin-top:18px;">
-  <label>1) Site Name</label>
-  <select id="pageSite">
-    <option value="" disabled selected>Select site</option>
-    <option value="MALSAR">MALSAR</option>
-    <option value="TOLASAR">TOLASAR</option>
-    <option value="BILLIYUBAS">BILLIYUBAS</option>
-    <option value="SAWAR">SAWAR</option>
-    <option value="GIRGHICHIYA">GIRGHICHIYA</option>
-    <option value="BHOJASAR">BHOJASAR</option>
-    <option value="SUMERIYA">SUMERIYA</option>
-  </select>
-</div>
-
+        <div style="margin-top:18px;">
+          <label>1) Site Name</label>
+          <select id="pageSite" required>
+            <option value="" disabled selected>Select site</option>
+            <option value="MALSAR">MALSAR</option>
+            <option value="TOLASAR">TOLASAR</option>
+            <option value="BILLIYUBAS">BILLIYUBAS</option>
+            <option value="SAWAR">SAWAR</option>
+            <option value="GIRGHICHIYA">GIRGHICHIYA</option>
+            <option value="BHOJASAR">BHOJASAR</option>
+            <option value="SUMERIYA">SUMERIYA</option>
+          </select>
+        </div>
 
         <div class="module-area">
           <div class="module-controls">
@@ -77,7 +135,7 @@
 
         <div style="margin-top:18px;">
           <label>3) Pallet No. (from which broken modules received)</label>
-          <input type="text" id="palletNo" placeholder="e.g. PLT-2025-001">
+          <input type="text" id="palletNo" placeholder="e.g. PLT-2025-001" required>
         </div>
 
         <div style="margin-top:18px;">
@@ -88,11 +146,11 @@
         <div class="two-grid">
           <div>
             <label>5) Date of received modules</label>
-            <input type="date" id="receivingDate">
+            <input type="date" id="receivingDate" required>
           </div>
           <div>
             <label>Inspected by (site engineer)</label>
-            <input type="text" id="engineer" placeholder="Site Engineer name">
+            <input type="text" id="engineer" placeholder="Site Engineer name" required>
           </div>
         </div>
 
@@ -111,37 +169,35 @@
     </div>
   </div>
 
+  <!-- ✅ Fullscreen success message -->
+  <div id="successOverlay">
+    <h2>✅ Data Submitted Successfully!</h2>
+    <p>Your entries were recorded in the sheet.</p>
+    <button onclick="hideSuccess()">OK</button>
+  </div>
+
   <script>
-    // ---- UPDATE THIS to your deployed Apps Script web app URL if different ----
     const POST_URL = "https://script.google.com/macros/s/AKfycby9qPUk7Mf1DBNXUKjGRsQpu4dwNtpNBdpPdfI-aDU7pdftimmNZ6GJMvh9AMo5E1DbhQ/exec";
 
-    // elements
-    const pageSite = document.getElementById('pageSite');
-    const rowsList = document.getElementById('rowsList');
-    const addRowBtn = document.getElementById('addRowBtn');
-    const removeLastBtn = document.getElementById('removeLastBtn');
-    const palletNo = document.getElementById('palletNo');
-    const invoiceNo = document.getElementById('invoiceNo');
-    const receivingDate = document.getElementById('receivingDate');
-    const engineer = document.getElementById('engineer');
-    const notes = document.getElementById('notes');
-    const messageEl = document.getElementById('message');
-    const resetBtn = document.getElementById('resetBtn');
-    const submitBtn = document.querySelector('.submit');
+    const pageSite=document.getElementById('pageSite');
+    const rowsList=document.getElementById('rowsList');
+    const addRowBtn=document.getElementById('addRowBtn');
+    const removeLastBtn=document.getElementById('removeLastBtn');
+    const palletNo=document.getElementById('palletNo');
+    const invoiceNo=document.getElementById('invoiceNo');
+    const receivingDate=document.getElementById('receivingDate');
+    const engineer=document.getElementById('engineer');
+    const notes=document.getElementById('notes');
+    const messageEl=document.getElementById('message');
+    const resetBtn=document.getElementById('resetBtn');
+    const submitBtn=document.querySelector('.submit');
+    const overlay=document.getElementById('successOverlay');
 
-    function showMessage(txt, type='') {
-      messageEl.textContent = txt;
-      messageEl.className = 'msg ' + type;
-    }
-
-    function escapeHtml(str) {
-      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    }
-
-    function createRow(serial = '', damage = '') {
-      const div = document.createElement('div');
-      div.className = 'row-item';
-      div.innerHTML = `
+    function showMessage(txt,type=''){messageEl.textContent=txt;messageEl.className='msg '+type;}
+    function escapeHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+    function createRow(serial='',damage=''){
+      const div=document.createElement('div');div.className='row-item';
+      div.innerHTML=`
         <div class="row-left">
           <label style="font-size:12px;color:var(--muted)">Module Serial No.</label>
           <input type="text" class="input-serial" placeholder="MOD-12345" value="${escapeHtml(serial)}">
@@ -150,124 +206,78 @@
           <label style="font-size:12px;color:var(--muted)">Damage / Reason</label>
           <textarea class="input-damage" placeholder="Short description">${escapeHtml(damage)}</textarea>
         </div>
-        <button type="button" class="icon-btn btn-remove" title="Remove row">🗑️</button>
-      `;
-      const del = div.querySelector('.btn-remove');
-      del.onclick = () => {
-        div.remove();
-        updateAddButtonState();
-      };
+        <button type="button" class="icon-btn btn-remove" title="Remove row">🗑️</button>`;
+      const del=div.querySelector('.btn-remove');
+      del.onclick=()=>{div.remove();updateAddButtonState();};
       rowsList.appendChild(div);
       updateAddButtonState();
       div.querySelector('.input-serial').focus();
     }
-
-    function updateAddButtonState() {
-      addRowBtn.disabled = (rowsList.children.length >= 10);
-      removeLastBtn.disabled = (rowsList.children.length === 0);
+    function updateAddButtonState(){
+      addRowBtn.disabled=(rowsList.children.length>=10);
+      removeLastBtn.disabled=(rowsList.children.length===0);
     }
-
-    // add/remove handlers
-    addRowBtn.onclick = () => {
-      if (rowsList.children.length >= 10) { alert('Maximum 10 rows allowed.'); return; }
-      createRow();
-    };
-    removeLastBtn.onclick = () => {
-      const last = rowsList.lastElementChild;
-      if (last) last.remove();
-      updateAddButtonState();
-    };
-
-    // Reset: always clear everything and leave exactly 1 blank row
-    function resetForm() {
-      rowsList.innerHTML = '';
-      createRow(); // 1 blank row
-      palletNo.value = '';
-      invoiceNo.value = '';
-      receivingDate.value = '';
-      engineer.value = '';
-      pageSite.value = '';
-      notes.value = '';
-      showMessage('');
-      updateAddButtonState();
+    addRowBtn.onclick=()=>{if(rowsList.children.length>=10){alert('Maximum 10 rows allowed.');return;}createRow();};
+    removeLastBtn.onclick=()=>{const last=rowsList.lastElementChild;if(last)last.remove();updateAddButtonState();};
+    function resetForm(){
+      rowsList.innerHTML='';createRow();
+      palletNo.value='';invoiceNo.value='';receivingDate.value='';
+      engineer.value='';pageSite.value='';notes.value='';
+      showMessage('');updateAddButtonState();
     }
-
-    resetBtn.onclick = () => {
-      if (confirm('Clear all fields?')) resetForm();
-    };
-
-    // init UI with one blank row
+    resetBtn.onclick=()=>{if(confirm('Clear all fields?'))resetForm();};
     resetForm();
 
-    // submit handler: sends one POST per row (keeps order matching Apps Script)
-    document.getElementById('damageForm').onsubmit = async e => {
+    document.getElementById('damageForm').onsubmit=async e=>{
       e.preventDefault();
+      document.activeElement.blur(); window.scrollTo(0,0); // ✅ hide keyboard
 
-      const siteValue = pageSite.value.trim().toUpperCase();
-      const rows = Array.from(rowsList.children).map(r => ({
-        serial: r.querySelector('.input-serial').value.trim(),
-        damage: r.querySelector('.input-damage').value.trim()
-      })).filter(r => r.serial && r.damage);
+      const siteValue=pageSite.value.trim().toUpperCase();
+      const rows=Array.from(rowsList.children).map(r=>({
+        serial:r.querySelector('.input-serial').value.trim(),
+        damage:r.querySelector('.input-damage').value.trim()
+      })).filter(r=>r.serial&&r.damage);
 
-      if (!rows.length) return showMessage('Please fill module serials & reasons.', 'error');
-      if (!palletNo.value.trim()) return showMessage('Pallet No. required.', 'error');
-      if (!receivingDate.value) return showMessage('Receiving Date required.', 'error');
-      if (!engineer.value.trim()) return showMessage('Engineer name required.', 'error');
-      if (!siteValue) return showMessage('Site name required.', 'error');
+      if(!rows.length)return showMessage('Please fill module serials & reasons.','error');
+      if(!palletNo.value.trim())return showMessage('Pallet No. required.','error');
+      if(!receivingDate.value)return showMessage('Receiving Date required.','error');
+      if(!engineer.value.trim())return showMessage('Engineer name required.','error');
+      if(!siteValue)return showMessage('Site name required.','error');
 
-      submitBtn.disabled = true;
-      submitBtn.style.opacity = '0.7';
+      submitBtn.disabled=true;submitBtn.style.opacity='0.7';
       showMessage(`Submitting ${rows.length} row(s)...`);
 
-      let success = 0;
-      for (const r of rows) {
-        const payload = {
-          serial: r.serial,
-          pallet: palletNo.value.trim(),
-          damage: r.damage,
-          receivingDate: receivingDate.value,
-          engineer: engineer.value.trim(),
-          site: siteValue,
-          notes: notes.value.trim()
-        };
-
-        // debug: show what we're sending
-        console.log('Sending payload:', payload);
-
-        try {
-          const res = await fetch(POST_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
-            body: new URLSearchParams(payload).toString()
-          });
-
-          const text = await res.text();
-          console.log('Server response (raw):', text);
-
-          let data;
-          try { data = JSON.parse(text); } catch { data = { raw: text }; }
-
-          // if server returns success, increment
-          if (data && data.status === 'success') success++;
-          else console.warn('Server returned non-success for row:', data);
-        } catch (err) {
-          console.error('Fetch error:', err);
-        }
+      let success=0;
+      for(const r of rows){
+        const payload={serial:r.serial,pallet:palletNo.value.trim(),damage:r.damage,
+          receivingDate:receivingDate.value,engineer:engineer.value.trim(),
+          site:siteValue,notes:notes.value.trim()};
+        try{
+          const res=await fetch(POST_URL,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:new URLSearchParams(payload).toString()});
+          const text=await res.text();
+          let data;try{data=JSON.parse(text);}catch{data={raw:text};}
+          if(data&&data.status==='success')success++;
+        }catch(err){console.error('Fetch error:',err);}
       }
-
-      submitBtn.disabled = false;
-      submitBtn.style.opacity = '';
-      showMessage(`✅ ${success}/${rows.length} rows saved.`, 'success');
-
-      if (success === rows.length) {
-        setTimeout(() => {
-          resetForm();
-          showMessage('✅ Data submitted successfully. Form cleared.', 'success');
-        }, 900);
-      } else {
-        showMessage(`⚠️ ${success}/${rows.length} saved. Fix remaining and resubmit.`, 'error');
+      submitBtn.disabled=false;submitBtn.style.opacity='';
+      if(success===rows.length){
+        showSuccess();
+        resetForm();
+      }else{
+        showMessage(`⚠️ ${success}/${rows.length} saved. Fix remaining and resubmit.`,'error');
       }
     };
+
+    function showSuccess(){
+      overlay.style.display='flex';
+    }
+    function hideSuccess(){
+      overlay.style.display='none';
+    }
   </script>
+  <!-- ✅ Footer -->
+  <footer class="footer">
+    <p>Designed by <strong>Dhramveer Joshi</strong> <span class="at">AT</span> <strong>SUNTRIK</strong></p>
+  </footer>
 </body>
 </html>
