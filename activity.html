@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Activity | Suntrik</title>
+  <style>
+    body{font-family:Arial, sans-serif; max-width:900px;margin:18px auto;padding:0 16px;}
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+    .card{border:1px solid #e6e6e6;padding:12px;border-radius:8px;background:#fff;margin-bottom:14px;}
+    input,textarea,button{font-size:15px;padding:8px;border:1px solid #ccc;border-radius:6px;width:100%}
+    textarea{resize:vertical}
+    .hidden{display:none}
+    .meta{color:#666;font-size:13px;margin-bottom:8px}
+    img.post-img{max-width:100%;height:auto;border-radius:6px;margin-top:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Suntrik — Activity Feed</h1>
+    <nav><a href="index.html">Home</a> · <a href="about.html">About</a></nav>
+  </header>
+
+  <!-- Sign-in -->
+  <section id="authArea" class="card">
+    <div id="signedOut">
+      <h3>Admin Login</h3>
+      <input id="email" type="email" placeholder="Admin email" />
+      <div style="height:8px"></div>
+      <input id="password" type="password" placeholder="Password" />
+      <div style="height:8px"></div>
+      <button id="loginBtn">Sign in</button>
+      <div id="loginMsg" style="color:#c00;margin-top:8px"></div>
+    </div>
+
+    <div id="signedIn" class="hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong id="userEmail"></strong></div>
+        <div>
+          <button id="signOutBtn">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Post form (visible only when signed in) -->
+  <section id="postArea" class="card hidden">
+    <h3>Create Post</h3>
+    <input id="authorName" placeholder="Your name (will show on post)" />
+    <div style="height:8px"></div>
+    <textarea id="content" rows="3" placeholder="Write activity / thought..."></textarea>
+    <div style="height:8px"></div>
+    <input id="imageInput" type="file" accept="image/*" />
+    <div style="height:8px"></div>
+    <button id="postBtn">Upload & Post</button>
+    <div id="postStatus" style="margin-top:8px;color:#006600"></div>
+  </section>
+
+  <!-- Feed -->
+  <section id="feed" class="card">
+    <h3>Recent Activities</h3>
+    <div id="posts"></div>
+  </section>
+
+  <footer style="margin-top:18px;color:#777;font-size:13px">© 2025 Suntrik</footer>
+
+  <!-- Firebase SDKs (modular) -->
+  <script type="module">
+    // ====== REPLACE ONLY firebaseConfig BELOW WITH YOUR PROJECT CONFIG ======
+    const firebaseConfig = {
+  apiKey: "AIzaSyAX-zmNhqxnBizqTAFazFV9wApsQZu5Xsk",
+  authDomain: "suntrik-activity.firebaseapp.com",
+  projectId: "suntrik-activity",
+  storageBucket: "suntrik-activity.firebasestorage.app",
+  messagingSenderId: "434040611133",
+  appId: "1:434040611133:web:0a56c5587e21d94653a554"
+};
+    // ======================================================================
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-storage.js";
+
+    // init
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // UI refs
+    const loginBtn = document.getElementById('loginBtn');
+    const emailEl = document.getElementById('email');
+    const passEl = document.getElementById('password');
+    const loginMsg = document.getElementById('loginMsg');
+    const signedInDiv = document.getElementById('signedIn');
+    const signedOutDiv = document.getElementById('signedOut');
+    const userEmailSpan = document.getElementById('userEmail');
+    const signOutBtn = document.getElementById('signOutBtn');
+
+    const postArea = document.getElementById('postArea');
+    const postBtn = document.getElementById('postBtn');
+    const authorNameEl = document.getElementById('authorName');
+    const contentEl = document.getElementById('content');
+    const imageInput = document.getElementById('imageInput');
+    const postStatus = document.getElementById('postStatus');
+
+    const postsDiv = document.getElementById('posts');
+
+    // Sign in handler
+    loginBtn.addEventListener('click', async () => {
+      loginMsg.textContent = '';
+      try {
+        await signInWithEmailAndPassword(auth, emailEl.value.trim(), passEl.value);
+      } catch (err) {
+        loginMsg.textContent = 'Login failed: ' + err.message;
+      }
+    });
+
+    // Sign out
+    signOutBtn.addEventListener('click', async () => {
+      await signOut(auth);
+    });
+
+    // Auth state
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        signedInDiv.classList.remove('hidden');
+        signedOutDiv.classList.add('hidden');
+        postArea.classList.remove('hidden');
+        userEmailSpan.textContent = user.email;
+      } else {
+        signedInDiv.classList.add('hidden');
+        signedOutDiv.classList.remove('hidden');
+        postArea.classList.add('hidden');
+      }
+    });
+
+    // Post creation
+    // DEBUGGING version of post handler — paste in place of previous handler
+postBtn.addEventListener('click', async () => {
+  postStatus.style.color = '#006600';
+  postStatus.textContent = 'Posting... (debugging)';
+  console.log('DEBUG: starting post flow');
+
+  try {
+    const user = auth.currentUser;
+    console.log('DEBUG: currentUser ->', user);
+    if (!user) throw new Error('Not signed in. Please sign in first.');
+
+    const content = contentEl.value.trim();
+    const authorName = (authorNameEl.value.trim() || user.email);
+    const file = imageInput.files[0];
+
+    if (!content && !file) throw new Error('Enter message or select an image.');
+
+    let imageUrl = "";
+    if (file) {
+      console.log('DEBUG: uploading file', file.name, file.size, file.type);
+      const path = `post_images/${user.uid}_${Date.now()}_${file.name}`;
+      const storageRef = sRef(storage, path);
+
+      // watch upload and catch errors
+      const uploadResult = await uploadBytes(storageRef, file).catch(e => { throw new Error('Storage upload failed: ' + e.message); });
+      console.log('DEBUG: uploadResult ->', uploadResult);
+      imageUrl = await getDownloadURL(storageRef).catch(e => { throw new Error('Failed to get download URL: ' + e.message); });
+      console.log('DEBUG: imageUrl ->', imageUrl);
+    }
+
+    // add doc to Firestore
+    const docRef = await addDoc(collection(db, 'posts'), {
+      authorName,
+      authorId: user.uid,
+      content,
+      imageUrl,
+      createdAt: serverTimestamp()
+    }).catch(e => { throw new Error('Firestore addDoc failed: ' + e.message); });
+
+    console.log('DEBUG: post created ->', docRef.id);
+    postStatus.style.color = '#006600';
+    postStatus.textContent = 'Posted ✓';
+    contentEl.value = '';
+    imageInput.value = '';
+  } catch (err) {
+    console.error('POST ERROR:', err);
+    postStatus.style.color = '#c00';
+    postStatus.textContent = 'Error: ' + err.message;
+  }
+});
+
+
+    // Live feed (listen to posts collection)
+    const postsQuery = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
+    onSnapshot(postsQuery, snapshot => {
+      postsDiv.innerHTML = '';
+      snapshot.forEach(doc => {
+        const d = doc.data();
+        const createdAt = d.createdAt ? d.createdAt.toDate().toLocaleString() : 'just now';
+        const postEl = document.createElement('div');
+        postEl.className = 'card';
+        postEl.innerHTML = `
+          <div class="meta"><strong>${escapeHtml(d.authorName||'Admin')}</strong> • <span>${escapeHtml(createdAt)}</span></div>
+          <div class="content">${escapeHtml(d.content||'')}</div>
+          ${d.imageUrl ? `<img class="post-img" src="${escapeHtml(d.imageUrl)}" alt="post image">` : ''}
+        `;
+        postsDiv.appendChild(postEl);
+      });
+    });
+
+    // small helper to avoid basic XSS
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]); });
+    }
+  </script>
+</body>
+</html>
